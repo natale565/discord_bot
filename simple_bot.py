@@ -23,3 +23,45 @@ bot_responses = {
     '!bye': 'See ya later!',
     
 }
+
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    
+    
+    elif message.content.lower() in bot_responses:
+        await message.channel.send(bot_responses[message.content.lower()])
+    
+    elif message.content.lower().startswith('!echo'):
+        parts = message.content.split()
+        echo_text = ' '.join(parts[1:])
+        await message.channel.send(echo_text)
+    
+    elif message.content.lower() == '!time':
+        time = datetime.now().strftime("%A, %B %d, %Y %H:%M:%S %p")
+        await message.channel.send(time)
+
+    elif message.content.lower().startswith('!weather'):
+        parts = message.content.split()
+        weather = ' '.join(parts[1:])
+
+        API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={weather}&appid={weather_api}&units=imperial'
+
+        response = requests.get(API_URL)
+        data = response.json()
+
+        if response.status_code == 200:
+            temp = data["main"]["temp"]
+            description = data["weather"][0]["description"]
+            await message.channel.send(f'Weather in {weather}: {temp}°F, {description}')
+        else:
+            await message.channel.send(f"Couldn't find weather for {weather}")
+
+      
+
+
+
+client.run(TOKEN)
