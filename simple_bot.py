@@ -1,5 +1,6 @@
 import discord
 import os
+from dadjokes import Dadjoke
 from discord import Intents
 from datetime import datetime
 from dotenv import load_dotenv
@@ -21,6 +22,7 @@ async def on_ready():
 bot_responses = {
     '!hello': 'Hi there!',
     '!bye': 'See ya later!',
+    '!offended': "I'm offended that you are offended by the offensive thing that offended you. Even though what offended you wasn't offensive and you're just soft."
     
 }
 
@@ -34,6 +36,7 @@ async def on_message(message):
     
     elif message.content.lower() in bot_responses:
         await message.channel.send(bot_responses[message.content.lower()])
+
     
     elif message.content.lower().startswith('!echo'):
         parts = message.content.split()
@@ -43,6 +46,10 @@ async def on_message(message):
     elif message.content.lower() == '!time':
         time = datetime.now().strftime("%A, %B %d, %Y %H:%M:%S %p")
         await message.channel.send(time)
+    
+    elif message.content.lower() == '!dadjoke':
+        dadjoke = Dadjoke()
+        await message.channel.send(dadjoke.joke)
 
     elif message.content.lower().startswith('!weather'):
         parts = message.content.split()
