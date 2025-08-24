@@ -1,4 +1,5 @@
 import discord
+import random
 import os
 from dadjokes import Dadjoke
 from discord import Intents
@@ -50,6 +51,19 @@ async def on_message(message):
     elif message.content.lower() == '!dadjoke':
         dadjoke = Dadjoke()
         await message.channel.send(dadjoke.joke)
+    
+    elif message.content.lower() == '!coinflip':
+        choices = ['Heads', 'Tails']
+        parts = message.content.split()
+        result = random.choice(choices)
+
+        if len(parts) > 1:
+            if parts[1].lower() == result.lower():
+                await message.channel.send(f"🎉 You guessed right! It was {result}!")
+            else:
+                await message.channel.send(f"Nope, it was {result}!")
+        else: 
+            await message.channel.send(result)
 
     elif message.content.lower().startswith('!weather'):
         parts = message.content.split()
