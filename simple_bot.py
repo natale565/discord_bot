@@ -55,15 +55,15 @@ async def on_message(message):
     elif message.content.lower() == '!coinflip':
         choices = ['Heads', 'Tails']
         parts = message.content.split()
-        result = random.choice(choices)
+        result = random.choice(choices).lower()
 
         if len(parts) > 1:
             if parts[1].lower() == result.lower():
-                await message.channel.send(f"🎉 You guessed right! It was {result}!")
+                await message.channel.send(f"🎉 You guessed right! It was {result.capitalize()}!")
             else:
-                await message.channel.send(f"Nope, it was {result}!")
+                await message.channel.send(f"Nope, it was {result.capitalize()}!")
         else: 
-            await message.channel.send(result)
+            await message.channel.send(result.capitalize())
 
     elif message.content.lower().startswith('!weather'):
         parts = message.content.split()
