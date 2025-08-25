@@ -120,6 +120,42 @@ async def on_message(message):
         else:
             await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You lose!')
 
+    elif message.content.lower().startswith('!crypto'):
+        parts = message.content.split()
+
+        if len(parts) < 2:
+            await message.channel.send('Please provide a coin. Example: !crypto bitcoin')
+        else:
+            coin = parts[1].lower()
+            url = f'https://api.coingecko.com/api/v3/coins/{coin}'
+
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                data = response.json()
+
+                market_data = data.get("market_data", {})
+                if market_data:
+                    price = market_data["current_price"]["usd"]
+                    change_24h = market_data["price_change_percentage_24h"]
+                    market_cap = market_data["market_cap"]["usd"]
+                    volume_24h = market_data["total_volume"]["usd"]
+
+                    await message.channel.send(
+                        f"📊 **{data['name']} ({data['symbol'].upper()})**\n"
+                        f"💰 Price: ${price:,.2f}\n"
+                        f"📉 24h Change: {change_24h:.2f}%\n"
+                        f"🏦 Market Cap: ${market_cap:,.0f}\n"
+                        f"📊 24h Volume: ${volume_24h:,.0f}"
+                        )
+                else:
+                    await message.channel.send(f"❌ No market data found for `{coin}`.")
+            except Exception as e:
+                print(f"Crypto API error: {e}")
+                await message.channel.send("⚠️ Unable to fetch crypto prices right now. Please try again later.")
+        
+
+
     elif message.content.lower().startswith('!horoscope'):
         parts = message.content.split()
 
