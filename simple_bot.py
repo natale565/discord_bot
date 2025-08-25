@@ -120,6 +120,48 @@ async def on_message(message):
         else:
             await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You lose!')
 
+    elif message.content.lower().startswith('!horoscope'):
+        parts = message.content.split()
+
+        if len(parts) < 2:
+            await message.channel.send('Please provide your zodiac sign. Example: !horoscope leo')
+            return
+
+        sign = ' '.join(parts[1:])
+
+        valid_signs = [
+            "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+            "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
+        ]
+
+        if sign.lower() not in valid_signs:
+            await message.channel.send("That’s not a valid zodiac sign. Try again!")
+            return
+
+        try:
+            # API needs POST with params, not query string
+            response = requests.post(
+                "https://aztro.sameerkumar.website/",
+                params={"sign": sign.lower(), "day": "today"},
+                timeout=5
+            )
+            response.raise_for_status()
+
+            print("Status code:", response.status_code)
+            print("Response content:", response.text[:200])  # Limit to first 200 chars
+
+
+            data = response.json()
+            horoscope_text = data['description']
+
+            await message.channel.send(f"Horoscope for {sign.title()}: {horoscope_text}")
+
+        except Exception as e:
+            await message.channel.send("Sorry, I couldn’t fetch your horoscope right now 🌌")
+            print("Horoscope error:", e)
+
+
+
 
 
     elif message.content.lower().startswith('!weather'):
