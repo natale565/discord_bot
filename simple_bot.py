@@ -23,8 +23,20 @@ async def on_ready():
 bot_responses = {
     '!hello': 'Hi there!',
     '!bye': 'See ya later!',
-    '!offended': "I'm offended that you are offended by the offensive thing that offended you. Even though what offended you wasn't offensive and you're just soft."
+    '!offended': "I'm offended that you are offended by the offensive thing that offended you. Even though what offended you wasn't offensive and you're just soft.",
     
+}
+
+commands = {
+    '!hello': 'have the bot say hello',
+    '!bye': 'have the bot say goodbye',
+    '!offended': 'are you offended? tell the bot.',
+    '!echo': 'Bot will echo back your message',
+    '!dadjoke': 'For your daily dad joke',
+    '!coinflip': 'self explanatory',
+    '!rps': 'Play some rock, paper, scissors!',
+    '!weather': 'type !weather and your city for the local weather'
+
 }
 
 
@@ -33,7 +45,21 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    
+
+    elif message.content.lower() == '!help':
+        embed = discord.Embed(
+            title="🤖 Bot Commands",
+            description="Here are all the commands you can use:",
+            color=discord.Color.blue()
+        )
+
+        for cmd, desc in commands.items():
+            embed.add_field(name=cmd, value=desc, inline=False)
+
+        await message.channel.send(embed=embed)
+
+
+
     
     elif message.content.lower() in bot_responses:
         await message.channel.send(bot_responses[message.content.lower()])
@@ -64,6 +90,37 @@ async def on_message(message):
                 await message.channel.send(f"Nope, it was {result.capitalize()}!")
         else: 
             await message.channel.send(result.capitalize())
+
+    elif message.content.lower().startswith('!rsp'):
+        parts = message.content.split()
+        choices = ['rock', 'paper', 'scissors']
+
+        if len(parts) < 2:
+            await message.channel.send('You need to pick rock, paper, or scissors!')
+            return
+
+        user_choice = parts[1].lower()
+        comp_choice = random.choice(choices)
+
+        if user_choice not in choices:
+            await message.channel.send('Invalid input')
+            return
+
+        # dictionary of winning rules
+        wins = {
+            'rock': 'scissors',
+            'paper': 'rock',
+            'scissors': 'paper'
+        }
+
+        if user_choice == comp_choice:
+            await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. It\'s a tie!')
+        elif wins[user_choice] == comp_choice:
+            await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You win!')
+        else:
+            await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You lose!')
+
+
 
     elif message.content.lower().startswith('!weather'):
         parts = message.content.split()
