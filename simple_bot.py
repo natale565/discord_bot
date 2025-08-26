@@ -14,6 +14,8 @@ weather_api = os.getenv('WEATHER_API')
 
 intents = Intents.default()
 intents.message_content = True
+intents.members = True
+intents.presences = True
 client = discord.Client(intents=intents)
 
 @client.event
@@ -39,6 +41,7 @@ commands = {
 
 }
 
+# twitch notification 
 @client.event
 async def on_member_update(before, after):
     print(f"--- {after.name} updated ---")
@@ -49,7 +52,7 @@ async def on_member_update(before, after):
     for a in after.activities:
         print(f"  {type(a)} -> {a}")
     print("-------------------------")
-    
+
     for activity in after.activities:
         if isinstance(activity, discord.Streaming):
             if not any(isinstance(a, discord.Streaming) for a in before.activities):
@@ -64,6 +67,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    # help command for a list of available commands
     elif message.content.lower() == '!help':
         embed = discord.Embed(
             title="🤖 Bot Commands",
@@ -138,6 +142,8 @@ async def on_message(message):
         else:
             await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You lose!')
 
+
+    # crypto ticker command
     elif message.content.lower().startswith('!crypto'):
         parts = message.content.split()
 
