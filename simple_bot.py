@@ -39,12 +39,30 @@ commands = {
 
 }
 
+@client.event
+async def on_member_update(before, after):
+    print(f"--- {after.name} updated ---")
+    print("Before activities:")
+    for a in before.activities:
+        print(f"  {type(a)} -> {a}")
+    print("After activities:")
+    for a in after.activities:
+        print(f"  {type(a)} -> {a}")
+    print("-------------------------")
+    
+    for activity in after.activities:
+        if isinstance(activity, discord.Streaming):
+            if not any(isinstance(a, discord.Streaming) for a in before.activities):
+                channel = discord.utils.get(after.guild.text_channels, name="going-live")
+                if channel:
+                    await channel.send(f"🚨 {after.mention} just went live! Watch here: {activity.url}")
+
+
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
-
 
     elif message.content.lower() == '!help':
         embed = discord.Embed(
