@@ -12,7 +12,7 @@ load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 weather_api = os.getenv('WEATHER_API')
 
-intents = Intents.default()
+intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.presences = True
