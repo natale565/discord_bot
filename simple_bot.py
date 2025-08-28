@@ -7,6 +7,7 @@ from discord import Intents
 from datetime import datetime
 from dotenv import load_dotenv
 import requests
+import time
 
 load_dotenv()
 
@@ -22,7 +23,10 @@ client = discord.Client(intents=intents)
 def load_data():
     if os.path.exists('levels.json'):
         with open('levels.json', 'r') as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}  # return empty dict if file is empty/broken
     else:
         return {}
     
@@ -32,6 +36,10 @@ def save_data(data):
 
 levels = load_data()
 
+XP_COOLDOWN = 10
+XP_PER_MESSAGE = 10
+LEVEL_UP_XP = 100
+
 
 @client.event
 async def on_message(message):
@@ -39,16 +47,26 @@ async def on_message(message):
 
     if message.author.bot:
         return
-    if user_id not in levels: levels[user_id] = {'xp': 0, 'level': 1}
-    levels[user_id]['xp'] += 10
     
-    save_data(levels)
+    if user_id not in levels: 
+        levels[user_id] = {'xp': 0, 'level': 1, 'last_xp': 0}
 
-    if levels[user_id]['xp'] >= 100:
+    current_time = time.time()
+    updated = False
+
+    if current_time - levels[user_id].get('last_xp', 0) >= XP_COOLDOWN:
+        levels[user_id]['xp'] += XP_PER_MESSAGE
+        levels[user_id]['last_xp'] = current_time
+        updated = True
+
+    if levels[user_id]['xp'] >= LEVEL_UP_XP:
         levels[user_id]['level'] += 1
         levels[user_id]['xp'] = 0
         await message.channel.send(f"🎉 Congratulations {message.author.mention}, you've leveled up to level {levels[user_id]['level']}!")
 
+        updated = True
+
+    if updated:
         save_data(levels)
 
 @client.event
