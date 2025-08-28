@@ -1,3 +1,4 @@
+import json
 import discord
 import random
 import os
@@ -17,6 +18,38 @@ intents.message_content = True
 intents.members = True
 intents.presences = True
 client = discord.Client(intents=intents)
+
+def load_data():
+    if os.path.exists('levels.json'):
+        with open('levels.json', 'r') as f:
+            return json.load(f)
+    else:
+        return {}
+    
+def save_data(data):
+    with open('levels.json', 'w') as f:
+        json.dump(data, f, indent=4)
+
+levels = load_data()
+
+
+@client.event
+async def on_message(message):
+    user_id = str(message.author.id)
+
+    if message.author.bot:
+        return
+    if user_id not in levels: levels[user_id] = {'xp': 0, 'level': 1}
+    levels[user_id]['xp'] += 10
+    
+    save_data(levels)
+
+    if levels[user_id]['xp'] >= 100:
+        levels[user_id]['level'] += 1
+        levels[user_id]['xp'] = 0
+        await message.channel.send(f"🎉 Congratulations {message.author.mention}, you've leveled up to level {levels[user_id]['level']}!")
+
+        save_data(levels)
 
 @client.event
 async def on_ready():
