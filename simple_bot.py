@@ -277,7 +277,7 @@ async def on_message(message):
 
     elif message.content.lower().startswith('!weather'):
         parts = message.content.split()
-        weather = ' '.join(parts[1:])
+        weather = ' '.join(parts[1:]).lower()
 
         API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={weather}&appid={weather_api}&units=imperial'
 
