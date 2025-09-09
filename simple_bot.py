@@ -41,33 +41,7 @@ XP_PER_MESSAGE = 10
 LEVEL_UP_XP = 100
 
 
-@client.event
-async def on_message(message):
-    user_id = str(message.author.id)
-
-    if message.author.bot:
-        return
-    
-    if user_id not in levels: 
-        levels[user_id] = {'xp': 0, 'level': 1, 'last_xp': 0}
-
-    current_time = time.time()
-    updated = False
-
-    if current_time - levels[user_id].get('last_xp', 0) >= XP_COOLDOWN:
-        levels[user_id]['xp'] += XP_PER_MESSAGE
-        levels[user_id]['last_xp'] = current_time
-        updated = True
-
-    if levels[user_id]['xp'] >= LEVEL_UP_XP:
-        levels[user_id]['level'] += 1
-        levels[user_id]['xp'] = 0
-        await message.channel.send(f"🎉 Congratulations {message.author.mention}, you've leveled up to level {levels[user_id]['level']}!")
-
-        updated = True
-
-    if updated:
-        save_data(levels)
+# Level system will be integrated into the main on_message handler below
 
 @client.event
 async def on_ready():
@@ -88,7 +62,8 @@ commands = {
     '!dadjoke': 'For your daily dad joke',
     '!coinflip': 'self explanatory',
     '!rps': 'Play some rock, paper, scissors!',
-    '!weather': 'type !weather and your city for the local weather'
+    '!weather': 'type !weather and your city for the local weather',
+    '!level': 'Check your current level and XP'
 
 }
 
@@ -118,8 +93,33 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    # Level system - handle XP and leveling up
+    user_id = str(message.author.id)
+    
+    if user_id not in levels: 
+        levels[user_id] = {'xp': 0, 'level': 1, 'last_xp': 0}
+
+    current_time = time.time()
+    updated = False
+
+    if current_time - levels[user_id].get('last_xp', 0) >= XP_COOLDOWN:
+        levels[user_id]['xp'] += XP_PER_MESSAGE
+        levels[user_id]['last_xp'] = current_time
+        updated = True
+
+    # Check for level up
+    required_xp = levels[user_id]['level'] * LEVEL_UP_XP
+    if levels[user_id]['xp'] >= required_xp:
+        levels[user_id]['level'] += 1
+        levels[user_id]['xp'] = 0  # Reset XP after level up
+        await message.channel.send(f"🎉 Congratulations {message.author.mention}, you've leveled up to level {levels[user_id]['level']}!")
+        updated = True
+
+    if updated:
+        save_data(levels)
+
     # help command for a list of available commands
-    elif message.content.lower() == '!help':
+    if message.content.lower() == '!help':
         embed = discord.Embed(
             title="🤖 Bot Commands",
             description="Here are all the commands you can use:",
@@ -131,13 +131,9 @@ async def on_message(message):
 
         await message.channel.send(embed=embed)
 
-
-
-    
     elif message.content.lower() in bot_responses:
         await message.channel.send(bot_responses[message.content.lower()])
 
-    
     elif message.content.lower().startswith('!echo'):
         parts = message.content.split()
         echo_text = ' '.join(parts[1:])
@@ -164,7 +160,7 @@ async def on_message(message):
         else: 
             await message.channel.send(result.capitalize())
 
-    elif message.content.lower().startswith('!rsp'):
+    elif message.content.lower().startswith('!rps'):
         parts = message.content.split()
         choices = ['rock', 'paper', 'scissors']
 
@@ -193,6 +189,25 @@ async def on_message(message):
         else:
             await message.channel.send(f'You picked {user_choice}, computer picked {comp_choice}. You lose!')
 
+    elif message.content.lower() == '!level':
+        user_id = str(message.author.id)
+        if user_id in levels:
+            current_level = levels[user_id]['level']
+            current_xp = levels[user_id]['xp']
+            required_xp = current_level * LEVEL_UP_XP
+            progress = (current_xp / required_xp) * 100
+            
+            embed = discord.Embed(
+                title=f"📊 {message.author.display_name}'s Level",
+                color=discord.Color.gold()
+            )
+            embed.add_field(name="Level", value=current_level, inline=True)
+            embed.add_field(name="XP", value=f"{current_xp}/{required_xp}", inline=True)
+            embed.add_field(name="Progress", value=f"{progress:.1f}%", inline=True)
+            
+            await message.channel.send(embed=embed)
+        else:
+            await message.channel.send("You haven't earned any XP yet! Start chatting to level up!")
 
     # crypto ticker command
     elif message.content.lower().startswith('!crypto'):
