@@ -140,8 +140,8 @@ async def on_message(message):
         await message.channel.send(echo_text)
     
     elif message.content.lower() == '!time':
-        time = datetime.now().strftime("%A, %B %d, %Y %H:%M:%S %p")
-        await message.channel.send(time)
+        current_time_str = datetime.now().strftime("%A, %B %d, %Y %H:%M:%S %p")
+        await message.channel.send(current_time_str)
     
     elif message.content.lower() == '!dadjoke':
         dadjoke = Dadjoke()
