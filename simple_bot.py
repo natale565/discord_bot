@@ -70,21 +70,21 @@ commands = {
 # twitch notification 
 @client.event
 async def on_member_update(before, after):
-    print(f"--- {after.name} updated ---")
-    print("Before activities:")
-    for a in before.activities:
-        print(f"  {type(a)} -> {a}")
-    print("After activities:")
-    for a in after.activities:
-        print(f"  {type(a)} -> {a}")
-    print("-------------------------")
+    print(f"[on_member_update] {after.name} updated.")
+    print(f"[on_member_update] Before activities: {[type(a) for a in before.activities]}")
+    print(f"[on_member_update] After activities: {[type(a) for a in after.activities]}")
 
     for activity in after.activities:
         if isinstance(activity, discord.Streaming):
+            print(f"[on_member_update] {after.name} is streaming: {activity}")
             if not any(isinstance(a, discord.Streaming) for a in before.activities):
+                print(f"[on_member_update] {after.name} was not previously streaming. Attempting to send notification.")
                 channel = discord.utils.get(after.guild.text_channels, name="going-live")
                 if channel:
                     await channel.send(f"🚨 {after.mention} just went live! Watch here: {activity.url}")
+                    print(f"[on_member_update] Notification sent to #going-live.")
+                else:
+                    print(f"[on_member_update] Channel 'going-live' not found.")
 
 
 
@@ -95,8 +95,8 @@ async def on_message(message):
 
     # Level system - handle XP and leveling up
     user_id = str(message.author.id)
-    
-    if user_id not in levels: 
+    if user_id not in levels:
+        print(f"[level] New user detected: {user_id}")
         levels[user_id] = {'xp': 0, 'level': 1, 'last_xp': 0}
 
     current_time = time.time()
@@ -105,6 +105,7 @@ async def on_message(message):
     if current_time - levels[user_id].get('last_xp', 0) >= XP_COOLDOWN:
         levels[user_id]['xp'] += XP_PER_MESSAGE
         levels[user_id]['last_xp'] = current_time
+        print(f"[level] {message.author} gained XP. Total XP: {levels[user_id]['xp']}")
         updated = True
 
     # Check for level up
@@ -112,11 +113,13 @@ async def on_message(message):
     if levels[user_id]['xp'] >= required_xp:
         levels[user_id]['level'] += 1
         levels[user_id]['xp'] = 0  # Reset XP after level up
+        print(f"[level] {message.author} leveled up to {levels[user_id]['level']}!")
         await message.channel.send(f"🎉 Congratulations {message.author.mention}, you've leveled up to level {levels[user_id]['level']}!")
         updated = True
 
     if updated:
         save_data(levels)
+        print(f"[level] Data saved for user {user_id}.")
 
     # help command for a list of available commands
     if message.content.lower() == '!help':
